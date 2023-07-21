@@ -4,12 +4,17 @@
   "description": "API para aplicação de menu digital para restaurante, desenvolvida no programa de formação Explorer da Rocketseat.",
   "main": "index.js",
   "scripts": {
-    "start": "node ./src/server.js"
+    "start": "node ./src/server.js",
+    "dev": "nodemon ./src/server.js"
   },
   "keywords": [],
   "author": "Vanessa Pereira da Silva",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "express-async-errors": "^3.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   }
 }
