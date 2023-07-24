@@ -1,14 +1,27 @@
+const knex = require("../database/knex");
 const AppError = require("../utils/AppError");
 
 class UsersController {
-  create(request, response) {
+  async create(request, response) {
     const { name, email, password, admin } = request.body;
 
-    if (!name) {
-      throw new AppError("O nome é obrigatório.");
+    if (!name || !email || !password) {
+      throw new AppError("Preencha todos os campos.");
     }
 
-    response.status(201).json({ name, email, password, admin });
+    const checkUserExists = await knex("users").where({ email }).first();
+    if (checkUserExists) {
+      throw new AppError("Este e-mail já está cadastrado.");
+    }
+
+    await knex("users").insert({
+      name,
+      email,
+      password,
+      admin: admin ? 1 : 0,
+    });
+
+    return response.status(201).json();
   }
 }
 
