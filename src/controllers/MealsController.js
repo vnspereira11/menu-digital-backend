@@ -1,4 +1,3 @@
-const { hash, compare } = require("bcryptjs");
 const knex = require("../database/knex");
 const AppError = require("../utils/AppError");
 
@@ -49,6 +48,35 @@ class MealsController {
       ...meal,
       ingredients,
     });
+  }
+
+  async update(request, response) {
+    const { id } = request.params;
+    const { name, category, ingredients, price, description } = request.body;
+
+    if (!name || !category || !ingredients || !price || !description) {
+      throw new AppError("Preencha todos os campos");
+    }
+
+    await knex("meals").where({ id }).update({
+      name,
+      category,
+      price,
+      description,
+      updated_at: knex.fn.now(),
+    });
+
+    const updatedIngredients = ingredients.map((name) => {
+      return {
+        meal_id: id,
+        name,
+      };
+    });
+
+    await knex("ingredients").where({ meal_id: id }).delete();
+    await knex("ingredients").insert(updatedIngredients);
+
+    return response.status(200).json();
   }
 
   async delete(request, response) {
