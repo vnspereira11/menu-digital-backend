@@ -50,6 +50,14 @@ class MealsController {
     });
   }
 
+  async index(request, response) {
+    const { user_id } = request.query;
+
+    const meals = await knex("meals").where({ user_id }).orderBy("name");
+
+    return response.json(meals);
+  }
+
   async update(request, response) {
     const { id } = request.params;
     const { name, category, ingredients, price, description } = request.body;
