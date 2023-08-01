@@ -37,8 +37,18 @@ class MealsController {
     return response.status(201).json();
   }
 
-  async update(request, response) {
-    return response.status(200).json();
+  async show(request, response) {
+    const { id } = request.params;
+
+    const meal = await knex("meals").where({ id }).first();
+    const ingredients = await knex("ingredients")
+      .where({ meal_id: id })
+      .orderBy("name");
+
+    return response.status(200).json({
+      ...meal,
+      ingredients,
+    });
   }
 }
 
