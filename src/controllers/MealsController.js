@@ -51,9 +51,15 @@ class MealsController {
   }
 
   async index(request, response) {
-    const { user_id } = request.query;
+    const { search } = request.query;
 
-    const meals = await knex("meals").where({ user_id }).orderBy("name");
+    const meals = await knex
+      .select("meals.id", "meals.name")
+      .from("meals")
+      .innerJoin("ingredients", "meals.id", "=", "ingredients.meal_id")
+      .whereLike("meals.name", `%${search}%`)
+      .orWhereLike("ingredients.name", `%${search}%`)
+      .groupBy("meals.name");
 
     return response.json(meals);
   }
