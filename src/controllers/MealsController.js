@@ -96,7 +96,7 @@ class MealsController {
   async delete(request, response) {
     const { id } = request.params;
     await knex("meals").where({ id }).delete();
-    return response.json();
+    return response.status(200).json();
   }
 }
 

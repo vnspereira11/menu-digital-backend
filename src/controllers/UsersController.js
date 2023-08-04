@@ -33,15 +33,17 @@ class UsersController {
 
   async update(request, response) {
     const { name, email, password, old_password } = request.body;
-    const { id } = request.params;
+    const user_id = request.user.id;
 
-    const user = await knex("users").where({ id }).first();
+    const user = await knex("users").where({ id: user_id }).first();
 
     if (!user) {
       throw new AppError("Usuário(a) não encontrado(a).");
     }
 
-    const userWithUpdatedEmail = await knex("users").where({ email: user.email }).first();
+    const userWithUpdatedEmail = await knex("users")
+      .where({ email: user.email })
+      .first();
 
     if (userWithUpdatedEmail && userWithUpdatedEmail.id !== user.id) {
       throw new AppError("Este e-mail já está cadastrado.");
@@ -71,7 +73,7 @@ class UsersController {
         password: user.password,
         updated_at: knex.fn.now(),
       })
-      .where({ id });
+      .where({ id: user_id });
 
     return response.status(200).json();
   }
