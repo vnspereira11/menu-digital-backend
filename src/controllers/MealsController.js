@@ -4,16 +4,17 @@ const AppError = require("../utils/AppError");
 class MealsController {
   async create(request, response) {
     const { name, category, ingredients, price, description } = request.body;
-    const { user_id } = request.params;
 
+    const user_id = request.user.id;
     const user = await knex("users").where({ id: user_id }).first();
-
-    if (user.admin === 0) {
-      throw new AppError("Sem permissão para cadastrar pratos.");
-    }
+    const isAdmin = user.admin === 1;
 
     if (!name || !category || !price || !description) {
       throw new AppError("Preencha os campos solicitados.");
+    }
+
+    if (!isAdmin) {
+      throw new AppError("Sem permissão para cadastrar pratos.", 401);
     }
 
     const [meal_id] = await knex("meals").insert({
