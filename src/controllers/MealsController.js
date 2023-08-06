@@ -95,6 +95,15 @@ class MealsController {
 
   async delete(request, response) {
     const { id } = request.params;
+    const user_id = request.user.id;
+
+    const user = await knex("users").where({ id: user_id }).first();
+    const isAdmin = user.admin === 1;
+
+    if (!isAdmin) {
+      throw new AppError("Sem permissão para excluir pratos.", 401);
+    }
+
     await knex("meals").where({ id }).delete();
     return response.status(200).json();
   }
