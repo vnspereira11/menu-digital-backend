@@ -8,6 +8,7 @@ const favoritesController = new FavoritesController();
 
 favoritesRoutes.use(ensureAuthenticated);
 favoritesRoutes.post("/", favoritesController.create);
+favoritesRoutes.get("/", favoritesController.index);
 favoritesRoutes.delete("/:id", favoritesController.delete);
 
 module.exports = favoritesRoutes;
