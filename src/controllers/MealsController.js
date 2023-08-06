@@ -68,8 +68,16 @@ class MealsController {
     const { id } = request.params;
     const { name, category, ingredients, price, description } = request.body;
 
+    const user_id = request.user.id;
+    const user = await knex("users").where({ id: user_id }).first();
+    const isAdmin = user.admin === 1;
+
     if (!name || !category || !ingredients || !price || !description) {
       throw new AppError("Preencha todos os campos");
+    }
+
+    if (!isAdmin) {
+      throw new AppError("Sem permissão para atualizar.", 401);
     }
 
     await knex("meals").where({ id }).update({
