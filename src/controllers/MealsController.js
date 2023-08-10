@@ -55,7 +55,7 @@ class MealsController {
     const { search } = request.query;
 
     const meals = await knex
-      .select("meals.id", "meals.name")
+      .select("meals.*")
       .from("meals")
       .innerJoin("ingredients", "meals.id", "=", "ingredients.meal_id")
       .whereLike("meals.name", `%${search}%`)
