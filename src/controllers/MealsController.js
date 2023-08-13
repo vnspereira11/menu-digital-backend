@@ -1,5 +1,6 @@
 const knex = require("../database/knex");
 const AppError = require("../utils/AppError");
+const DiskStorage = require("../providers/DiskStorage");
 
 class MealsController {
   async create(request, response) {
@@ -9,6 +10,11 @@ class MealsController {
     const user = await knex("users").where({ id: user_id }).first();
     const isAdmin = user.admin === 1;
 
+    let image = null;
+    let filename = null;
+
+    const diskStorage = new DiskStorage();
+
     if (!name || !category || !price || !description) {
       throw new AppError("Preencha os campos solicitados.");
     }
@@ -17,7 +23,13 @@ class MealsController {
       throw new AppError("Sem permissão para cadastrar pratos.", 401);
     }
 
+    if (request.file) {
+      image = request.file.filename;
+      filename = await diskStorage.saveFile(image);
+    }
+
     const [meal_id] = await knex("meals").insert({
+      image: image ? filename : null,
       name,
       category,
       price,
@@ -25,7 +37,7 @@ class MealsController {
       user_id,
     });
 
-    const ingredientsInsert = ingredients.map((name) => {
+    const ingredientsInsert = JSON.parse(ingredients).map((name) => {
       return {
         meal_id,
         name,
@@ -73,15 +85,33 @@ class MealsController {
     const user = await knex("users").where({ id: user_id }).first();
     const isAdmin = user.admin === 1;
 
+    let image = null;
+    let filename = null;
+
+    const diskStorage = new DiskStorage();
+
     if (!name || !category || !ingredients || !price || !description) {
       throw new AppError("Preencha todos os campos");
     }
 
     if (!isAdmin) {
-      throw new AppError("Sem permissão para atualizar.", 401);
+      throw new AppError("Sem permissão para atualizar pratos.", 401);
+    }
+
+    const meal = await knex("meals").where({ id }).first();
+
+    filename = meal.image;
+
+    if (request.file) {
+      if (meal.image) {
+        await diskStorage.deleteFile(meal.image);
+      }
+      image = request.file.filename;
+      filename = await diskStorage.saveFile(image);
     }
 
     await knex("meals").where({ id }).update({
+      image: filename,
       name,
       category,
       price,
@@ -89,7 +119,7 @@ class MealsController {
       updated_at: knex.fn.now(),
     });
 
-    const updatedIngredients = ingredients.map((name) => {
+    const updatedIngredients = JSON.parse(ingredients).map((name) => {
       return {
         meal_id: id,
         name,
