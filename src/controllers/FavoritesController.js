@@ -13,20 +13,20 @@ class FavoritesController {
       throw new AppError("Usuário ou prato não encontrados.");
     }
 
-    const mealFavorited = await knex("favorites")
+    const isFavorite = await knex("favorites")
       .where({ user_id, meal_id })
       .first();
 
-    if (mealFavorited) {
+    if (isFavorite) {
       throw new AppError("Você já favoritou esse prato.");
     }
 
-    await knex("favorites").insert({
+    const [favorited] = await knex("favorites").insert({
       user_id: user_id,
       meal_id: meal_id,
     });
 
-    return response.status(201).json();
+    return response.status(201).json([favorited]);
   }
 
   async index(request, response) {
