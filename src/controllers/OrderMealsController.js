@@ -36,6 +36,22 @@ class OrderMealsController {
 
     return response.status(201).json();
   }
+
+  async show(resquest, response) {
+    const user_id = resquest.user.id;
+
+    const order_meals = await knex("order_meals")
+      .select("order_meals.amount", "order_meals.meal_id")
+      .from("order_meals")
+      .where("order_meals.user_id", user_id);
+
+    let totalAmount = 0;
+
+    order_meals.forEach((meal) => {
+      totalAmount += meal.amount;
+    });
+    return response.status(200).json({ totalAmount });
+  }
 }
 
 module.exports = OrderMealsController;
