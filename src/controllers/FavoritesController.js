@@ -21,20 +21,25 @@ class FavoritesController {
       throw new AppError("Você já favoritou esse prato.");
     }
 
-    const [favorited] = await knex("favorites").insert({
+    const [id] = await knex("favorites").insert({
       user_id: user_id,
       meal_id: meal_id,
     });
 
-    return response.status(201).json([favorited]);
+    return response.status(201).json({ id });
   }
 
   async index(request, response) {
     const user_id = request.user.id;
 
     const userFavorites = await knex("favorites")
-      .select("meals.id", "meals.name")
-      .innerJoin("meals", "meals.id", "favorites.meal_id")
+      .select([
+        "meals.id as meal_id",
+        "meals.name",
+        "meals.image",
+        "favorites.id",
+      ])
+      .innerJoin("meals", "meals.id", "=", "favorites.meal_id")
       .where("favorites.user_id", user_id);
 
     return response.json(userFavorites);
